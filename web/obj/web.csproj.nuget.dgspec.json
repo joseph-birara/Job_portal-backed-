@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\josep\\OneDrive\\Documents\\programing\\webApi\\web\\web.csproj": {}
+    "C:\\Users\\josep\\Job_portal-backend-\\web\\web.csproj": {}
   },
   "projects": {
-    "C:\\Users\\josep\\OneDrive\\Documents\\programing\\webApi\\web\\web.csproj": {
+    "C:\\Users\\josep\\Job_portal-backend-\\web\\web.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\josep\\OneDrive\\Documents\\programing\\webApi\\web\\web.csproj",
+        "projectUniqueName": "C:\\Users\\josep\\Job_portal-backend-\\web\\web.csproj",
         "projectName": "web",
-        "projectPath": "C:\\Users\\josep\\OneDrive\\Documents\\programing\\webApi\\web\\web.csproj",
+        "projectPath": "C:\\Users\\josep\\Job_portal-backend-\\web\\web.csproj",
         "packagesPath": "C:\\Users\\josep\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\josep\\OneDrive\\Documents\\programing\\webApi\\web\\obj\\",
+        "outputPath": "C:\\Users\\josep\\Job_portal-backend-\\web\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\josep\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -38,6 +38,14 @@
         "net6.0": {
           "targetAlias": "net6.0",
           "dependencies": {
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.IdentityModel.Tokens": {
+              "target": "Package",
+              "version": "[6.27.0, )"
+            },
             "MongoDB.Driver": {
               "target": "Package",
               "version": "[2.18.0, )"
@@ -45,6 +53,10 @@
             "Swashbuckle.AspNetCore": {
               "target": "Package",
               "version": "[6.2.3, )"
+            },
+            "System.IdentityModel.Tokens.Jwt": {
+              "target": "Package",
+              "version": "[6.27.0, )"
             }
           },
           "imports": [

@@ -5,45 +5,49 @@ using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
 
 
-    public class Employer
+public class Employer
+{
+
+    [BsonId]
+    [BsonRepresentation(BsonType.ObjectId)]
+    public string? Id { get; set; }
+
+    public string name { get; set; }
+    public string? lastName { get; set; }
+    public string? password { get; set; }
+    public string phone { get; set; }
+    public string email { get; set; }
+    public string Role { get; set; }
+
+
+
+    public Employer(
+      string id,
+
+      string lastName,
+       string password,
+       string name,
+
+        string phone,
+        string email,
+        string Role
+        )
     {
-    
- [BsonId]
-[BsonRepresentation(BsonType.ObjectId)]
-public string? Id { get; set; }
 
-public string name { get; set; }
- public string? lastName { get; set; }
- public string? password { get; set; }
- public string phone { get; set; }
- public string email { get; set; }
+        this.Id = id;
+        this.password = password;
+        this.lastName = lastName;
+        this.email = email;
+
+        this.name = name;
+        this.phone = phone;
+        this.Role = Role;
 
 
- 
- public Employer(
-   string id ,
-  
-   string lastName,
-    string password, 
-    string name,
-    
-     string phone,
-     string email    
-     ){
-    
-    this.Id = id;
-    this.password = password;
-    this.lastName= lastName;
-    this.email= email;
-    
-    this.name = name;
-    this.phone = phone;
-    
 
- }
-
-    
-    
     }
-   
-    
+
+
+
+}
+
