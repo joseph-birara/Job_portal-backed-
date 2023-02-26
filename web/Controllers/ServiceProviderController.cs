@@ -1,4 +1,10 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using web.Models;
 using web.Services;
 
@@ -10,16 +16,24 @@ namespace web.Controllers
     {
 
         private readonly ServiceProviderService _ServiceProviderService;
+        private readonly IConfiguration _config;
 
-        public ServiceProviderController(ServiceProviderService ServiceProviderService) =>
+        public ServiceProviderController(ServiceProviderService ServiceProviderService, IConfiguration config)
+        {
             _ServiceProviderService = ServiceProviderService;
+            _config = config;
+
+        }
+
         [Route("getProfile")]
 
         [HttpGet]
-        public async Task<ActionResult> GetUsers(string id)
-        {
 
-            var profile = _ServiceProviderService.GetProfile(id);
+        public async Task<ActionResult> GetUsers()
+        {
+            var curr_user = GetCurrentUser();
+
+            var profile = _ServiceProviderService.GetProfile(curr_user.name);
             if (profile == null)
             {
                 return BadRequest("no information was found");
@@ -42,12 +56,16 @@ namespace web.Controllers
         }
 
 
-        [HttpPut("edit/{id}")]
+        [HttpPut("edit")]
 
-        public IActionResult editUSerInfo(string id, [FromBody] UpdateModel updateInfo)
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "user")]
+
+        public IActionResult editUSerInfo([FromBody] UpdateModel updateInfo)
         {
+            var curr_user = GetCurrentUser();
 
-            var result = _ServiceProviderService.UpdateUsers(id, updateInfo);
+
+            var result = _ServiceProviderService.UpdateUsers(curr_user.name, updateInfo);
             if (result)
             {
                 return Ok("updated successully");
@@ -56,10 +74,14 @@ namespace web.Controllers
 
         }
 
-        [HttpDelete("delete/{id}")]
-        public IActionResult DeleteByID(string id)
+        [HttpDelete("delete")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "user")]
+
+        public IActionResult DeleteByID()
+
         {
-            var deleted = _ServiceProviderService.Delete(id);
+            var curr_user = GetCurrentUser();
+            var deleted = _ServiceProviderService.Delete(curr_user.name);
             if (deleted)
             {
                 return Ok("deleted successfully");
@@ -82,7 +104,8 @@ namespace web.Controllers
                 return BadRequest("No user found");
 
             }
-            return Ok("log in success");
+            var token = GenerateToken(usr.Id, usr.role);
+            return Ok(token);
 
         }
 
@@ -90,6 +113,41 @@ namespace web.Controllers
 
 
 
+        private string GenerateToken(string id, string role)
+        {
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier,id),
+                new Claim(ClaimTypes.Role,role)
+            };
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(2),
+                SigningCredentials = credentials
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+
+        }
+
+        private LoginModel GetCurrentUser()
+        {
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
+            if (identity != null)
+            {
+                var userClaims = identity.Claims;
+                return new LoginModel
+                {
+                    name = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier)?.Value,
+                    password = userClaims.FirstOrDefault(x => x.Type == ClaimTypes.Role)?.Value
+                };
+            }
+            return null;
+        }
 
 
     }

@@ -20,7 +20,7 @@ public class UserInformation
     public string phone { get; set; }
     public string email { get; set; }
     public string shortBio { get; set; }
-    public string Role { get; set; }
+    public string role = "user";
 
 
     public UserInformation(
@@ -32,13 +32,13 @@ public class UserInformation
         string shortBio,
         string phone,
         string email,
-        string address,
-        string Role
+        string address
+
 
 
         )
     {
-        this.Role = Role;
+
         this.profession = profession;
         this.Id = id;
         this.password = password;

@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using web.Models;
@@ -11,7 +12,7 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
-    [Route("/[controller]")]
+    [Route("/api/[controller]")]
     public class AdminController : ControllerBase
     {
         private readonly IConfiguration _config;
@@ -29,23 +30,22 @@ namespace web.Controllers
 
 
         [HttpGet]
-        [Authorize(Roles = "admin")]
-        public async Task<IActionResult> GetAdmins(string id)
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
+        public async Task<ActionResult> GetAdmins()
         {
+            var curr_user = GetCurrentUser();
 
-            LoginModel result = GetCurrentUser();
-            Console.WriteLine(result.name);
-            Console.WriteLine(result.password);
-
-
+            var result = await _adminService.GetAllAdmins(curr_user.name);
             if (result != null)
             {
                 return Ok(result);
             }
             return BadRequest("no result found");
         }
+
         [Route("getUsers")]
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
         public async Task<ActionResult> GetService_providers()
         {
 
@@ -58,6 +58,7 @@ namespace web.Controllers
         }
         [Route("getEmployers")]
         [HttpGet]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
         public async Task<ActionResult> Get_employers()
         {
 
@@ -85,11 +86,13 @@ namespace web.Controllers
         }
 
         //updates admin information 
-        [HttpPut("edit/{id}")]
+        [HttpPut("edit")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
 
-        public async Task<IActionResult> editUSerInfo(string id, [FromBody] AdminUpdate updateInfo)
+        public async Task<IActionResult> editUSerInfo([FromBody] AdminUpdate updateInfo)
         {
-            var result = await _adminService.UpdateAdmin(id, updateInfo);
+            var curr_user = GetCurrentUser();
+            var result = await _adminService.UpdateAdmin(curr_user.name, updateInfo);
             if (result)
             {
                 return Ok("updated successfully");
@@ -99,6 +102,7 @@ namespace web.Controllers
         }
 
         [HttpDelete("delete/{id}")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "admin")]
         public async Task<IActionResult> DeleteByID(string id)
         {
             var result = await _adminService.DeleteAdminAsync(id);
@@ -108,8 +112,8 @@ namespace web.Controllers
             }
             return BadRequest("failed");
         }
-        [Route("login")]
-        [HttpPost]
+
+        [HttpPost("login")]
         public async Task<ActionResult> LogIn(LoginModel loginInfo)
         {
             if (string.IsNullOrWhiteSpace(loginInfo.name) || string.IsNullOrWhiteSpace(loginInfo.password))
@@ -122,31 +126,28 @@ namespace web.Controllers
                 return BadRequest("No account found");
 
             }
-            var token = GenerateToken(admin);
+            var token = GenerateToken(admin.Id, admin.role);
             return Ok(token);
-
-
-
-
         }
         // To generate token
-        private string GenerateToken(UserAdmin user)
+        private string GenerateToken(string id, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var tokenHandler = new JwtSecurityTokenHandler();
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier,user.name),
-                new Claim(ClaimTypes.Role,"admin")
+                new Claim(ClaimTypes.NameIdentifier,id),
+                new Claim(ClaimTypes.Role,role)
             };
-            var token = new JwtSecurityToken(_config["JWT:Issuer"],
-                _config["JWT:Audience"],
-                claims,
-                expires: DateTime.Now.AddMinutes(15),
-                signingCredentials: credentials);
-
-
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddDays(2),
+                SigningCredentials = credentials
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
 
         }
 

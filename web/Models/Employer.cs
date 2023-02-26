@@ -17,7 +17,7 @@ public class Employer
     public string? password { get; set; }
     public string phone { get; set; }
     public string email { get; set; }
-    public string Role { get; set; }
+    public string role = "employer";
 
 
 
@@ -29,8 +29,8 @@ public class Employer
        string name,
 
         string phone,
-        string email,
-        string Role
+        string email
+
         )
     {
 
@@ -41,7 +41,7 @@ public class Employer
 
         this.name = name;
         this.phone = phone;
-        this.Role = Role;
+
 
 
 
