@@ -15,7 +15,6 @@ public class ServiceProviderService
         _userCollection = database.GetCollection<UserInformation>(mongoDbSettings.Value.collectionOne);
 
     }
-
     public ServiceProviderService()
     {
     }
@@ -83,20 +82,14 @@ public class ServiceProviderService
             // handle the exception here
             return false;
         }
-
-
-
-
-
     }
     public Task<UserInformation> ServiceProviderLogin(LoginModel loginInfo)
     {
         return Task.FromResult(_userCollection.Find(t => t.name == loginInfo.name && t.password == loginInfo.password).FirstOrDefault());
 
-
     }
-
-
-
-
+    public async Task<List<UserInformation>> GetFiltered(string profession)
+    {
+        return await _userCollection.Find(x => x.profession == profession).ToListAsync();
+    }
 }

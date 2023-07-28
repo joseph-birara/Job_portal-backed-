@@ -80,6 +80,32 @@ namespace web.Controllers
             }
             return BadRequest("deleting failed");
         }
+
+        [Route("getAll")]
+        [HttpGet]
+        public async Task<ActionResult> GetService_providers()
+        {
+            var result = await _employerService.AllServiceProviders();
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return NotFound("empity list");
+        }
+
+        [Route("filter")]
+        [HttpGet]
+        public async Task<ActionResult> GetService_by_profession(string profession)
+        {
+            var result = await _employerService.Filterd_ServiceProviders(profession);
+            if (result != null)
+            {
+                return Ok(result);
+            }
+            return NotFound("empity list");
+        }
+
+
         [Route("login")]
         [HttpPost]
         public async Task<ActionResult> LogIn(LoginModel loginInfo)
@@ -100,6 +126,7 @@ namespace web.Controllers
 
 
         }
+
         private string GenerateToken(string id, string role)
         {
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:Key"]));
@@ -136,5 +163,6 @@ namespace web.Controllers
             return null;
         }
     }
+
 
 }

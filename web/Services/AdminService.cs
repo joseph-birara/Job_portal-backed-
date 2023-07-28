@@ -48,9 +48,6 @@ public class AdminService
 
     public Task<List<UserAdmin>> GetAllAdmins(string id)
     {
-
-
-
         tmp = _adminCollection.Find(_ => true).ToList();
 
         return Task.FromResult(tmp);
@@ -68,9 +65,6 @@ public class AdminService
     }
     public async Task<bool> UpdateAdmin(string id, AdminUpdate updateInfo)
     {
-
-
-
         try
         {
             FilterDefinition<UserAdmin> filter = Builders<UserAdmin>.Filter.Eq("Id", id);

@@ -7,11 +7,13 @@ namespace web.Services;
 public class EmployerService
 {
     private readonly IMongoCollection<Employer> _employerCollection;
-    public EmployerService(IOptions<MongoDbSettings> mongoDbSettings)
+    private ServiceProviderService _myService;
+    public EmployerService(IOptions<MongoDbSettings> mongoDbSettings, ServiceProviderService serviceProvider)
     {
         MongoClient client = new MongoClient(mongoDbSettings.Value.ConnectionUrl);
         IMongoDatabase database = client.GetDatabase(mongoDbSettings.Value.DatabaseName);
         _employerCollection = database.GetCollection<Employer>(mongoDbSettings.Value.collectionThree);
+        _myService = serviceProvider;
 
     }
 
@@ -48,12 +50,12 @@ public class EmployerService
         try
         {
             FilterDefinition<Employer> filter = Builders<Employer>.Filter.Eq("Id", id);
-             UpdateDefinition<Employer> update = Builders<Employer>.Update
-            .Set("name", updateInfo.name)
-            .Set("lastName", updateInfo.lastName)
-            .Set("email", updateInfo.email)
-            .Set("phone", updateInfo.phone);
-            var result = _employerCollection.UpdateOne(filter,update);
+            UpdateDefinition<Employer> update = Builders<Employer>.Update
+           .Set("name", updateInfo.name)
+           .Set("lastName", updateInfo.lastName)
+           .Set("email", updateInfo.email)
+           .Set("phone", updateInfo.phone);
+            var result = _employerCollection.UpdateOne(filter, update);
             return result.ModifiedCount > 0;
         }
         catch (Exception ex)
@@ -91,6 +93,17 @@ public class EmployerService
 
 
     }
+    public async Task<List<UserInformation>> AllServiceProviders()
+    {
+        return await _myService.GetAsync();
+
+    }
+    public async Task<List<UserInformation>> Filterd_ServiceProviders(string profession)
+    {
+        return await _myService.GetFiltered(profession);
+
+    }
+
 
 
 }
